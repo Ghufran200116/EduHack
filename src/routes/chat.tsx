@@ -31,13 +31,18 @@ function ChatPage() {
   const [done, setDone] = useState(false);
   const [saving, setSaving] = useState(false);
   const endRef = useRef<HTMLDivElement>(null);
+  const askedIdxRef = useRef(-1);
 
   useEffect(() => { if (!loading && !user) navigate({ to: "/", replace: true }); }, [loading, user, navigate]);
   useEffect(() => { endRef.current?.scrollIntoView({ behavior: "smooth" }); }, [messages, idx]);
 
-  // Bot asks the next question
+  // Bot asks the next question. Guarded by a ref (not just the idx dependency)
+  // because React dev mode double-invokes effects on mount, which would
+  // otherwise post the first question twice.
   useEffect(() => {
     if (idx >= QUESTIONS.length || done) return;
+    if (askedIdxRef.current === idx) return;
+    askedIdxRef.current = idx;
     const q = QUESTIONS[idx];
     setMessages((m) => [...m, { from: "bot", text: q.prompt }]);
   }, [idx, done]);
