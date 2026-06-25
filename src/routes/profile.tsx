@@ -7,6 +7,7 @@ import { LearningFingerprint } from "@/lib/fingerprint";
 import { Logo } from "@/components/Logo";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { FEEDBACK_QUESTIONS } from "@/lib/feedbackQuestions";
@@ -195,7 +196,9 @@ function FeedbackDialog({ courseId, courseName }: { courseId: string; courseName
   const [saving, setSaving] = useState(false);
 
   const submit = async () => {
-    const entries = Object.entries(answers).filter(([, v]) => !!v);
+    const entries = Object.entries(answers)
+      .map(([qk, v]) => [qk, v.trim()] as const)
+      .filter(([, v]) => !!v);
     if (entries.length === 0) { toast.error("Pick at least one answer"); return; }
     setSaving(true);
     for (const [qk, ak] of entries) {
@@ -228,21 +231,31 @@ function FeedbackDialog({ courseId, courseName }: { courseId: string; courseName
           {FEEDBACK_QUESTIONS.map((q) => (
             <div key={q.key}>
               <p className="font-extrabold text-sm">{q.prompt}</p>
-              <div className="mt-2 flex flex-wrap gap-2">
-                {q.options.map((opt) => {
-                  const selected = answers[q.key] === opt.key;
-                  return (
-                    <button
-                      key={opt.key}
-                      type="button"
-                      onClick={() => setAnswers((s) => ({ ...s, [q.key]: opt.key }))}
-                      className={`rounded-full border-2 px-3 py-1.5 text-xs font-bold transition ${selected ? "bg-primary text-primary-foreground border-primary" : "bg-background hover:border-primary"}`}
-                    >
-                      {opt.label}
-                    </button>
-                  );
-                })}
-              </div>
+              {q.type === "text" ? (
+                <Textarea
+                  value={answers[q.key] ?? ""}
+                  onChange={(e) => setAnswers((s) => ({ ...s, [q.key]: e.target.value }))}
+                  placeholder="Optional — write whatever's on your mind…"
+                  className="mt-2 rounded-2xl"
+                  rows={3}
+                />
+              ) : (
+                <div className="mt-2 flex flex-wrap gap-2">
+                  {q.options.map((opt) => {
+                    const selected = answers[q.key] === opt.key;
+                    return (
+                      <button
+                        key={opt.key}
+                        type="button"
+                        onClick={() => setAnswers((s) => ({ ...s, [q.key]: opt.key }))}
+                        className={`rounded-full border-2 px-3 py-1.5 text-xs font-bold transition ${selected ? "bg-primary text-primary-foreground border-primary" : "bg-background hover:border-primary"}`}
+                      >
+                        {opt.label}
+                      </button>
+                    );
+                  })}
+                </div>
+              )}
             </div>
           ))}
         </div>

@@ -1,5 +1,5 @@
 export interface FeedbackOption { key: string; label: string }
-export interface FeedbackQuestion { key: string; prompt: string; options: FeedbackOption[] }
+export interface FeedbackQuestion { key: string; prompt: string; type?: "choice" | "text"; options: FeedbackOption[] }
 
 export const FEEDBACK_QUESTIONS: FeedbackQuestion[] = [
   {
@@ -40,5 +40,38 @@ export const FEEDBACK_QUESTIONS: FeedbackQuestion[] = [
       { key: "study_group", label: "An official study group" },
       { key: "examples", label: "More worked examples" },
     ],
+  },
+  {
+    key: "workload",
+    prompt: "How is the workload for this course?",
+    options: [
+      { key: "too_light", label: "Too light" },
+      { key: "just_right", label: "Just right" },
+      { key: "too_heavy", label: "Too heavy" },
+    ],
+  },
+  {
+    key: "engagement",
+    prompt: "How engaging are the class sessions?",
+    options: [
+      { key: "very_engaging", label: "Very engaging" },
+      { key: "somewhat_engaging", label: "Somewhat engaging" },
+      { key: "disengaged", label: "I tend to zone out" },
+    ],
+  },
+  {
+    key: "assessments",
+    prompt: "How fair do assessments (quizzes/assignments) feel?",
+    options: [
+      { key: "very_fair", label: "Very fair" },
+      { key: "mostly_fair", label: "Mostly fair" },
+      { key: "often_unfair", label: "Often feel unfair" },
+    ],
+  },
+  {
+    key: "open_feedback",
+    prompt: "Anything else you'd like to share?",
+    type: "text",
+    options: [],
   },
 ];

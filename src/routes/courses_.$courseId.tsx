@@ -235,6 +235,27 @@ function FeedbackSection({ feedback }: { feedback: FeedbackRow[] }) {
             const rowsForQ = feedback.filter((r) => r.question_key === q.key);
             if (rowsForQ.length === 0) return null;
             const qTotal = rowsForQ.reduce((s, x) => s + x.count, 0);
+
+            if (q.type === "text") {
+              return (
+                <div key={q.key}>
+                  <h3 className="font-extrabold text-sm">{q.prompt}</h3>
+                  <p className="text-xs text-muted-foreground">{qTotal} response{qTotal === 1 ? "" : "s"}</p>
+                  <div className="mt-2 space-y-2">
+                    {rowsForQ.map((r, i) => {
+                      const dim = DIMENSIONS.find((d) => d.key === r.dominant_dimension);
+                      return (
+                        <div key={i} className="rounded-xl bg-muted/30 p-3 flex items-start gap-2">
+                          {dim && <span className="mt-1.5 h-2 w-2 rounded-full shrink-0" style={{ backgroundColor: dim.hex }} />}
+                          <p className="text-sm">"{r.answer_key}"</p>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              );
+            }
+
             return (
               <div key={q.key}>
                 <h3 className="font-extrabold text-sm">{q.prompt}</h3>
