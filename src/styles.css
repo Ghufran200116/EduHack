@@ -1,0 +1,137 @@
+@import "tailwindcss" source(none);
+@source "../src";
+@import "tw-animate-css";
+
+@custom-variant dark (&:is(.dark *));
+
+@theme inline {
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+  --radius-2xl: calc(var(--radius) + 8px);
+  --radius-3xl: calc(var(--radius) + 12px);
+  --radius-4xl: calc(var(--radius) + 16px);
+
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+
+  --color-dim-visual: var(--dim-visual);
+  --color-dim-kinesthetic: var(--dim-kinesthetic);
+  --color-dim-auditory: var(--dim-auditory);
+  --color-dim-readwrite: var(--dim-readwrite);
+  --color-dim-social: var(--dim-social);
+
+  --color-brand: var(--brand);
+  --color-brand-foreground: var(--brand-foreground);
+  --color-sun: var(--sun);
+
+  --font-sans: "Nunito", ui-sans-serif, system-ui, sans-serif;
+  --font-display: "Nunito", ui-sans-serif, system-ui, sans-serif;
+}
+
+:root {
+  --radius: 1rem;
+
+  --background: oklch(0.99 0.005 95);
+  --foreground: oklch(0.27 0.05 250);
+
+  --card: oklch(1 0 0);
+  --card-foreground: oklch(0.27 0.05 250);
+  --popover: oklch(1 0 0);
+  --popover-foreground: oklch(0.27 0.05 250);
+
+  /* Brand: vivid purple/orchid #BD4FD1 */
+  --brand: oklch(0.63 0.22 320);
+  --brand-foreground: oklch(0.99 0 0);
+
+  --primary: oklch(0.63 0.22 320);
+  --primary-foreground: oklch(0.99 0 0);
+
+  --secondary: oklch(0.96 0.01 250);
+  --secondary-foreground: oklch(0.27 0.05 250);
+
+  --muted: oklch(0.96 0.01 250);
+  --muted-foreground: oklch(0.5 0.04 250);
+
+  --accent: oklch(0.95 0.04 320);
+  --accent-foreground: oklch(0.4 0.18 320);
+
+  --destructive: oklch(0.6 0.22 25);
+  --destructive-foreground: oklch(0.99 0 0);
+
+  --border: oklch(0.92 0.01 250);
+  --input: oklch(0.92 0.01 250);
+  --ring: oklch(0.63 0.22 320);
+
+  /* Five learning dimension colors */
+  --dim-visual: oklch(0.6 0.16 240);       /* #2D7DD2 bright blue */
+  --dim-kinesthetic: oklch(0.62 0.18 35);  /* #D2552F warm orange-red */
+  --dim-auditory: oklch(0.83 0.16 85);     /* #F2C200 sunny yellow */
+  --dim-readwrite: oklch(0.62 0.12 180);   /* #1FA98C teal */
+  --dim-social: oklch(0.7 0.17 0);         /* #E8568F pink */
+  --sun: oklch(0.83 0.16 85);
+
+  /* Charts */
+  --chart-1: var(--dim-visual);
+  --chart-2: var(--dim-kinesthetic);
+  --chart-3: var(--dim-auditory);
+  --chart-4: var(--dim-readwrite);
+  --chart-5: var(--dim-social);
+
+  --sidebar: oklch(0.99 0.005 95);
+  --sidebar-foreground: oklch(0.27 0.05 250);
+  --sidebar-primary: var(--brand);
+  --sidebar-primary-foreground: oklch(0.99 0 0);
+  --sidebar-accent: oklch(0.95 0.04 320);
+  --sidebar-accent-foreground: oklch(0.4 0.18 320);
+  --sidebar-border: oklch(0.92 0.01 250);
+  --sidebar-ring: var(--brand);
+}
+
+@layer base {
+  * {
+    border-color: var(--color-border);
+  }
+  body {
+    background-color: var(--color-background);
+    color: var(--color-foreground);
+    font-family: var(--font-sans);
+    font-weight: 500;
+  }
+  h1, h2, h3, h4 {
+    font-weight: 800;
+    letter-spacing: -0.01em;
+  }
+}
+
+@utility chat-bubble-bot {
+  background-color: oklch(0.96 0.01 250);
+  color: var(--color-foreground);
+  border-radius: 1.5rem 1.5rem 1.5rem 0.25rem;
+  padding: 0.875rem 1.125rem;
+}
+
+@utility chat-bubble-user {
+  background-color: var(--color-brand);
+  color: var(--color-brand-foreground);
+  border-radius: 1.5rem 1.5rem 0.25rem 1.5rem;
+  padding: 0.875rem 1.125rem;
+}
