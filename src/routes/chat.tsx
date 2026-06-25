@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Logo } from "@/components/Logo";
 import { Progress } from "@/components/ui/progress";
+import { Loader2 } from "lucide-react";
 
 export const Route = createFileRoute("/chat")({
   head: () => ({ meta: [{ title: "Chat — EduHack" }] }),
@@ -45,6 +46,7 @@ function ChatPage() {
 
   const finish = async (finalScores: DimensionScores) => {
     if (!user) return;
+    setDone(true);
     setSaving(true);
     const total = Object.values(finalScores).reduce((a, b) => a + b, 0) || 1;
     const norm: DimensionScores = {
@@ -57,9 +59,7 @@ function ChatPage() {
     await supabase.from("dimension_scores").upsert({
       user_id: user.id, ...norm, updated_at: new Date().toISOString(),
     });
-    setDone(true);
-    setMessages((m) => [...m, { from: "bot", text: "This is a snapshot of your preferences, not a box — it can change as you do." }]);
-    setTimeout(() => navigate({ to: "/profile" }), 1800);
+    setTimeout(() => navigate({ to: "/profile" }), 1200);
   };
 
   const handleChoice = async (choice: Choice) => {
@@ -131,16 +131,26 @@ function ChatPage() {
     }
   };
 
+  if (done) {
+    return (
+      <div className="min-h-screen bg-background flex flex-col items-center justify-center gap-4 px-6 text-center">
+        <Loader2 className="h-10 w-10 animate-spin text-primary" />
+        <h1 className="text-xl font-extrabold">Generating your fingerprint…</h1>
+        <p className="text-sm text-muted-foreground max-w-sm">
+          This is a snapshot of your preferences, not a box — it can change as you do.
+        </p>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-background flex flex-col">
       <header className="px-6 py-4 border-b flex items-center justify-between">
         <Logo />
-        {!done && (
-          <div className="flex items-center gap-3 text-sm font-semibold text-muted-foreground">
-            <span>Question {Math.min(idx + 1, QUESTIONS.length)} of {QUESTIONS.length}</span>
-            <Progress value={(idx / QUESTIONS.length) * 100} className="w-32" />
-          </div>
-        )}
+        <div className="flex items-center gap-3 text-sm font-semibold text-muted-foreground">
+          <span>Question {Math.min(idx + 1, QUESTIONS.length)} of {QUESTIONS.length}</span>
+          <Progress value={(idx / QUESTIONS.length) * 100} className="w-32" />
+        </div>
       </header>
 
       <main className="flex-1 overflow-y-auto">
@@ -157,7 +167,7 @@ function ChatPage() {
         </div>
       </main>
 
-      {!done && currentQ && (
+      {currentQ && (
         <footer className="border-t bg-card">
           <div className="max-w-2xl mx-auto px-4 py-4 space-y-3">
             <p className="text-xs font-semibold text-muted-foreground">Pick a suggestion or write your own answer 👇</p>
