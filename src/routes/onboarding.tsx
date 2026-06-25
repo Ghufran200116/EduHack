@@ -51,7 +51,7 @@ function Onboarding() {
 
         <div className="mt-10 grid sm:grid-cols-3 gap-4">
           {[
-            { n: "1", t: "Chat for ~3 min", d: "Twelve playful questions, no right or wrong." },
+            { n: "1", t: "Chat for ~3 min", d: "A short chat, no right or wrong answers." },
             { n: "2", t: "See your fingerprint", d: "A blend across five learning dimensions." },
             { n: "3", t: "Try the study tips", d: "Practical nudges tailored to your mix." },
           ].map((s) => (
@@ -82,20 +82,20 @@ function Onboarding() {
             </span>
           </label>
 
-          <div className="flex flex-wrap items-center gap-6">
-            <Dialog>
-              <DialogTrigger className="text-sm text-primary font-semibold underline-offset-4 hover:underline">What happens to my data?</DialogTrigger>
-              <DialogContent>
-                <DialogHeader><DialogTitle>Your data, simply</DialogTitle></DialogHeader>
-                <ul className="text-sm space-y-2 text-muted-foreground">
-                  <li>• Your individual answers and scores are <b>only ever visible to you</b>.</li>
-                  <li>• Educators see <b>aggregated</b> class data, never single students.</li>
-                  <li>• Aggregates are only unlocked once <b>5+ consenting students</b> have profiled.</li>
-                  <li>• You can edit your answers any time — the profile is a snapshot, not a verdict.</li>
-                </ul>
-              </DialogContent>
-            </Dialog>
+          <Dialog>
+            <DialogTrigger className="text-sm text-primary font-semibold underline-offset-4 hover:underline">What happens to my data?</DialogTrigger>
+            <DialogContent>
+              <DialogHeader><DialogTitle>Your data, simply</DialogTitle></DialogHeader>
+              <ul className="text-sm space-y-2 text-muted-foreground">
+                <li>• Your individual answers and scores are <b>only ever visible to you</b>.</li>
+                <li>• Educators see <b>aggregated</b> class data, never single students.</li>
+                <li>• Aggregates are only unlocked once <b>5+ consenting students</b> have profiled.</li>
+                <li>• You can edit your answers any time — the profile is a snapshot, not a verdict.</li>
+              </ul>
+            </DialogContent>
+          </Dialog>
 
+          <div className="flex justify-center">
             <Button onClick={start} disabled={!profileConsent || saving} className="w-full sm:w-auto h-12 px-8 text-base font-bold rounded-2xl">
               Start
             </Button>
