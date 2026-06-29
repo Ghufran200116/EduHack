@@ -118,7 +118,7 @@ function AuthPage() {
         <Logo className="text-primary-foreground" />
         <div className="relative z-10 max-w-md">
           <h1 className="text-4xl md:text-5xl font-extrabold leading-tight">
-            Learning profile. <span className="text-sun">Grow your way.</span>
+            Find your learning profile. <span className="text-sun">Grow your way.</span>
           </h1>
           <p className="mt-4 text-base/relaxed opacity-90">
             A friendly chatbot helps you see your mix of learning tendencies — never a label, never a box.
