@@ -4,8 +4,15 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth";
 import { DIMENSIONS } from "@/lib/dimensions";
 import { Logo } from "@/components/Logo";
-import { Lock, Plus, Copy, Check } from "lucide-react";
+import { Lock, Plus, Copy, Check, MoreVertical, Archive, ArchiveRestore, Trash2 } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "@/components/ui/dialog";
+import {
+  AlertDialog, AlertDialogTrigger, AlertDialogContent, AlertDialogHeader, AlertDialogTitle,
+  AlertDialogDescription, AlertDialogFooter, AlertDialogAction, AlertDialogCancel,
+} from "@/components/ui/alert-dialog";
+import {
+  DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem,
+} from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -16,7 +23,7 @@ export const Route = createFileRoute("/courses")({
   component: CoursesPage,
 });
 
-interface Course { id: string; name: string; semester: string; join_code: string; owner_id: string | null }
+interface Course { id: string; name: string; semester: string; join_code: string; owner_id: string | null; archived_at: string | null }
 interface Agg {
   enrolled_count: number; profiled_count: number; consenting_count: number; unlocked: boolean;
   visual: number; kinesthetic: number; auditory: number; read_write: number; social: number;
@@ -28,6 +35,7 @@ function CoursesPage() {
   const [courses, setCourses] = useState<Course[]>([]);
   const [aggs, setAggs] = useState<Record<string, Agg>>({});
   const [open, setOpen] = useState(false);
+  const [showArchived, setShowArchived] = useState(false);
 
   useEffect(() => {
     if (!loading && !user) navigate({ to: "/", replace: true });
@@ -41,7 +49,7 @@ function CoursesPage() {
       .select("*")
       .eq("owner_id", user.id)
       .order("created_at", { ascending: false });
-    const list = (data ?? []) as Course[];
+    const list = (data ?? []) as unknown as Course[];
     setCourses(list);
     const entries = await Promise.all(list.map(async (c) => {
       const { data: agg } = await supabase.rpc("get_course_aggregate", { _course_id: c.id });
@@ -55,6 +63,9 @@ function CoursesPage() {
   useEffect(() => { refresh(); /* eslint-disable-next-line */ }, [user]);
 
   const signOut = async () => { await supabase.auth.signOut(); navigate({ to: "/" }); };
+
+  const activeCourses = courses.filter((c) => !c.archived_at);
+  const archivedCourses = courses.filter((c) => c.archived_at);
 
   return (
     <div className="min-h-screen bg-background">
@@ -77,9 +88,14 @@ function CoursesPage() {
             <p className="text-sm text-muted-foreground mt-1">Create your first course and share its join code with students.</p>
             <Button onClick={() => setOpen(true)} className="mt-5 rounded-2xl font-bold"><Plus className="h-4 w-4 mr-1" />Add course</Button>
           </div>
+        ) : activeCourses.length === 0 ? (
+          <div className="mt-10 rounded-3xl border-2 border-dashed p-10 text-center bg-card">
+            <h2 className="font-extrabold text-lg">All your courses are archived</h2>
+            <p className="text-sm text-muted-foreground mt-1">Unarchive one below, or add a new course.</p>
+          </div>
         ) : (
           <div className="mt-8 grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
-            {courses.map((c) => {
+            {activeCourses.map((c) => {
               const a = aggs[c.id];
               const pct = a && a.enrolled_count > 0 ? Math.round((a.profiled_count / a.enrolled_count) * 100) : 0;
               const unlocked = a?.unlocked ?? false;
@@ -90,7 +106,10 @@ function CoursesPage() {
                       <h3 className="font-extrabold text-lg">{c.name}</h3>
                       <p className="text-xs text-muted-foreground mt-0.5">{c.semester}</p>
                     </div>
-                    {!unlocked && <Lock className="h-4 w-4 text-muted-foreground" />}
+                    <div className="flex items-center gap-1">
+                      {!unlocked && <Lock className="h-4 w-4 text-muted-foreground" />}
+                      <CourseMenu course={c} onChanged={refresh} />
+                    </div>
                   </div>
                   <JoinCodeChip code={c.join_code} />
                   <div className="mt-3 text-xs text-muted-foreground">
@@ -116,8 +135,109 @@ function CoursesPage() {
             })}
           </div>
         )}
+
+        {archivedCourses.length > 0 && (
+          <div className="mt-10">
+            <button
+              type="button"
+              onClick={() => setShowArchived((v) => !v)}
+              className="text-sm font-semibold text-muted-foreground hover:text-foreground hover:underline"
+            >
+              {showArchived ? "Hide" : "Show"} archived courses ({archivedCourses.length})
+            </button>
+            {showArchived && (
+              <div className="mt-4 space-y-2">
+                {archivedCourses.map((c) => (
+                  <div key={c.id} className="flex items-center justify-between gap-3 rounded-2xl border-2 px-4 py-3 bg-muted/30">
+                    <div>
+                      <span className="font-bold text-sm">{c.name}</span>
+                      <span className="text-muted-foreground text-xs"> · {c.semester}</span>
+                    </div>
+                    <CourseMenu course={c} onChanged={refresh} />
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
       </main>
     </div>
+  );
+}
+
+function CourseMenu({ course, onChanged }: { course: Course; onChanged: () => void }) {
+  const [confirmOpen, setConfirmOpen] = useState(false);
+  const [busy, setBusy] = useState(false);
+
+  const archive = async () => {
+    const { error } = await supabase.from("courses").update({ archived_at: new Date().toISOString() } as any).eq("id", course.id);
+    if (error) { toast.error(error.message); return; }
+    toast.success("Course archived");
+    onChanged();
+  };
+
+  const unarchive = async () => {
+    const { error } = await supabase.from("courses").update({ archived_at: null } as any).eq("id", course.id);
+    if (error) { toast.error(error.message); return; }
+    toast.success("Course unarchived");
+    onChanged();
+  };
+
+  const remove = async () => {
+    setBusy(true);
+    const { error } = await supabase.from("courses").delete().eq("id", course.id);
+    setBusy(false);
+    if (error) { toast.error(error.message); return; }
+    toast.success("Course deleted");
+    onChanged();
+  };
+
+  return (
+    <>
+      <DropdownMenu>
+        <DropdownMenuTrigger asChild>
+          <button
+            type="button"
+            aria-label="Course options"
+            onClick={(e) => { e.preventDefault(); e.stopPropagation(); }}
+            className="rounded-full p-1 text-muted-foreground hover:text-foreground hover:bg-muted"
+          >
+            <MoreVertical className="h-4 w-4" />
+          </button>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent align="end" onClick={(e) => e.stopPropagation()}>
+          {course.archived_at ? (
+            <DropdownMenuItem onSelect={(e) => { e.preventDefault(); unarchive(); }}>
+              <ArchiveRestore className="h-4 w-4 mr-2" /> Unarchive
+            </DropdownMenuItem>
+          ) : (
+            <DropdownMenuItem onSelect={(e) => { e.preventDefault(); archive(); }}>
+              <Archive className="h-4 w-4 mr-2" /> Archive
+            </DropdownMenuItem>
+          )}
+          <DropdownMenuItem onSelect={(e) => { e.preventDefault(); setConfirmOpen(true); }} className="text-destructive focus:text-destructive">
+            <Trash2 className="h-4 w-4 mr-2" /> Delete
+          </DropdownMenuItem>
+        </DropdownMenuContent>
+      </DropdownMenu>
+
+      <AlertDialog open={confirmOpen} onOpenChange={setConfirmOpen}>
+        <AlertDialogContent onClick={(e) => e.stopPropagation()}>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete "{course.name}"?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This permanently deletes the course along with all student enrollments and feedback. This can't be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction disabled={busy} onClick={remove} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+              {busy ? "Deleting…" : "Delete"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+    </>
   );
 }
 
