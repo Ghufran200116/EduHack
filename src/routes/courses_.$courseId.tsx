@@ -6,7 +6,12 @@ import { DIMENSIONS, type DimensionKey } from "@/lib/dimensions";
 import { Logo } from "@/components/Logo";
 import { Donut } from "@/lib/donut";
 import { FEEDBACK_QUESTIONS } from "@/lib/feedbackQuestions";
-import { Lock, ArrowLeft, MessageSquareHeart, Copy, ShieldCheck } from "lucide-react";
+import { Lock, ArrowLeft, MessageSquareHeart, Copy, ShieldCheck, Pencil } from "lucide-react";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogTrigger } from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { toast } from "sonner";
 
 export const Route = createFileRoute("/courses_/$courseId")({
   head: () => ({ meta: [{ title: "Course insights — EduHack" }] }),
@@ -114,7 +119,10 @@ function CourseDetail() {
       </header>
       <main className="max-w-5xl mx-auto px-6 py-10">
         <p className="text-xs font-extrabold uppercase tracking-widest text-primary">Educator dashboard</p>
-        <h1 className="mt-1 text-3xl md:text-4xl font-extrabold">{course.name}</h1>
+        <div className="mt-1 flex items-center gap-2">
+          <h1 className="text-3xl md:text-4xl font-extrabold">{course.name}</h1>
+          <EditCourseDialog course={course} onUpdated={setCourse} />
+        </div>
         <p className="text-muted-foreground mt-1">{course.semester}</p>
         <p className="text-muted-foreground text-sm mt-0.5">{agg.profiled_count} of {agg.enrolled_count} students profiled · {pct}%</p>
         <button
@@ -308,5 +316,56 @@ function Stat({ label, value }: { label: string; value: number | string }) {
       <div className="text-xs font-bold uppercase text-muted-foreground tracking-wide">{label}</div>
       <div className="mt-1 text-2xl font-extrabold">{value}</div>
     </div>
+  );
+}
+
+function EditCourseDialog({ course, onUpdated }: { course: Course; onUpdated: (c: Course) => void }) {
+  const [open, setOpen] = useState(false);
+  const [name, setName] = useState(course.name);
+  const [semester, setSemester] = useState(course.semester);
+  const [saving, setSaving] = useState(false);
+
+  const submit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setSaving(true);
+    const { data, error } = await supabase
+      .from("courses")
+      .update({ name: name.trim(), semester: semester.trim() } as any)
+      .eq("id", course.id)
+      .select("*")
+      .single();
+    setSaving(false);
+    if (error || !data) { toast.error(error?.message ?? "Could not update course"); return; }
+    onUpdated(data as Course);
+    toast.success("Course updated");
+    setOpen(false);
+  };
+
+  return (
+    <Dialog open={open} onOpenChange={(v) => { setOpen(v); if (v) { setName(course.name); setSemester(course.semester); } }}>
+      <DialogTrigger asChild>
+        <button type="button" aria-label="Edit course" className="text-muted-foreground hover:text-foreground">
+          <Pencil className="h-4 w-4" />
+        </button>
+      </DialogTrigger>
+      <DialogContent>
+        <form onSubmit={submit} className="space-y-4">
+          <DialogHeader><DialogTitle>Edit course</DialogTitle></DialogHeader>
+          <div>
+            <Label htmlFor="ename">Course name</Label>
+            <Input id="ename" value={name} onChange={(e) => setName(e.target.value)} required />
+          </div>
+          <div>
+            <Label htmlFor="esem">Semester</Label>
+            <Input id="esem" value={semester} onChange={(e) => setSemester(e.target.value)} required />
+          </div>
+          <DialogFooter>
+            <Button type="submit" disabled={saving || !name.trim() || !semester.trim()} className="rounded-2xl font-bold">
+              {saving ? "Saving…" : "Save changes"}
+            </Button>
+          </DialogFooter>
+        </form>
+      </DialogContent>
+    </Dialog>
   );
 }
