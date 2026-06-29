@@ -9,6 +9,7 @@ import { Input } from "@/components/ui/input";
 import { Logo } from "@/components/Logo";
 import { Progress } from "@/components/ui/progress";
 import { Loader2 } from "lucide-react";
+import logoImg from "@/assets/logo.jpeg";
 
 export const Route = createFileRoute("/chat")({
   head: () => ({ meta: [{ title: "Chat — EduHack" }] }),
@@ -195,14 +196,5 @@ function ChatPage() {
 }
 
 function BotAvatar() {
-  return (
-    <span aria-hidden className="shrink-0 inline-flex h-9 w-9 items-center justify-center rounded-2xl text-white shadow-sm" style={{ backgroundColor: "#2D7DD2" }}>
-      <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
-        <path d="M4 12c0-2 1.5-3 3-3s3 1 3 3v3" />
-        <path d="M10 12c0-2 1.5-3 3-3s3 1 3 3" />
-        <path d="M16 12c0-1.7 1.3-3 3-3" />
-        <path d="M7 12v4a4 4 0 0 0 4 4h2a4 4 0 0 0 4-4v-4" />
-      </svg>
-    </span>
-  );
+  return <img src={logoImg} alt="" aria-hidden className="shrink-0 h-9 w-9 rounded-2xl object-cover shadow-sm" />;
 }
